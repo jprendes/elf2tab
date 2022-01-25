@@ -265,7 +265,7 @@ fn elf_to_tbf<W: Write>(
                     // will be at 0x80000000. Otherwise, we interpret this to
                     // mean that the binary was compiled for a fixed address in
                     // flash.
-                    if segment.vaddr == 0x80000000 {
+                    if segment.vaddr >= 0x80000000 {
                         fixed_address_flash_pic = true;
                     } else {
                         fixed_address_flash = if let Some(prev_addr) = fixed_address_flash {
