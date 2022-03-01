@@ -271,7 +271,7 @@ fn elf_to_tbf<W: Write>(
                     // will be at 0x80000000. Otherwise, we interpret this to
                     // mean that the binary was compiled for a fixed address in
                     // flash.
-                    if segment.vaddr == 0x80000000 {
+                    if segment.vaddr >= 0x80000000 {
                         fixed_address_flash_pic = true;
                     } else {
                         fixed_address_flash = if let Some(prev_addr) = fixed_address_flash {
@@ -574,10 +574,10 @@ fn elf_to_tbf<W: Write>(
     // For each section that might have relocation data, check if a .rel.X
     // section exists and if so include it.
     if verbose {
-        println!("Searching for .rel.X sections to add.");
+        println!("Searching for .rela.X sections to add.");
     }
     for relocation_section_name in &rel_sections {
-        let mut name: String = ".rel".to_owned();
+        let mut name: String = ".rela".to_owned();
         name.push_str(relocation_section_name);
 
         let rel_data = input
