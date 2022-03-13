@@ -503,12 +503,25 @@ fn elf_to_tbf<W: Write>(
         {
             // This is a section we are going to add to the binary.
 
+            // The address of the segment is the address in FLASH.
+            // For loadable segments, we need to find its load memory address instead.
+            let addr = {
+                let mut addr = section.shdr.addr as usize;
+                for phdr in &input.phdrs {
+                    if addr == phdr.vaddr as usize {
+                        addr = phdr.paddr as usize;
+                        break;
+                    }
+                }
+                addr
+            };
+
             if last_section_address_end.is_some() {
                 // We have a previous section. Now, check if there is any
                 // padding between the sections in the .elf.
                 let end = last_section_address_end.unwrap();
-                let start = section.shdr.addr as usize;
-
+                let start = addr;
+                
                 // Because we have flash and ram memory regions, we have
                 // multiple address spaces. This check lets us assume we are in
                 // a new address segment. We need the start of the next section
@@ -560,7 +573,7 @@ fn elf_to_tbf<W: Write>(
             binary_index += section.shdr.size as usize;
 
             // And update our end in the .elf offset address space.
-            last_section_address_end = Some((section.shdr.addr + section.shdr.size) as usize);
+            last_section_address_end = Some(addr + section.shdr.size as usize);
         }
     }
 
